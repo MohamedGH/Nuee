@@ -14,10 +14,18 @@ const MannequinScene = dynamic(() => import("./MannequinScene"), {
   ),
 });
 
-export default function Mannequin3D({ selection }: { selection: GarmentSelection }) {
+import type { PosePreset } from "./types";
+
+export default function Mannequin3D({
+  selection,
+  pose = "neutral",
+}: {
+  selection: GarmentSelection;
+  pose?: PosePreset;
+}) {
   return (
     <div className="w-full aspect-[3/4] bg-line/40">
-      <MannequinScene selection={selection} />
+      <MannequinScene selection={selection} pose={pose} />
     </div>
   );
 }
