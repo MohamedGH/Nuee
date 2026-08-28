@@ -6,7 +6,7 @@ import Mannequin3D from "./Mannequin3D";
 import SlotPicker from "./SlotPicker";
 import type { GarmentSelection } from "./MannequinScene";
 import { CATEGORY_HAUT_STYLE, firstColorHex } from "./types";
-import type { MannequinProduct, Slot } from "./types";
+import type { MannequinProduct, Slot, PosePreset } from "./types";
 import { useCart } from "@/store/cart";
 import { formatPrice } from "@/lib/format";
 
@@ -32,6 +32,7 @@ export default function EssayageClient({
   const [selected, setSelected] = useState<Partial<Record<Slot, MannequinProduct>>>(
     initial ? { [initial.slot]: initial.product } : {}
   );
+  const [pose, setPose] = useState<PosePreset>("neutral");
   const [size, setSize] = useState("M");
   const [added, setAdded] = useState(false);
   const add = useCart((s) => s.add);
@@ -89,12 +90,41 @@ export default function EssayageClient({
     (p) => !p.variants.some((v) => v.size === size && v.stock > 0)
   );
 
+  const POSES: { id: PosePreset; label: string }[] = [
+    { id: "neutral", label: "Pose Neutre" },
+    { id: "model", label: "Pose Mannequin" },
+    { id: "walk", label: "Pose Défilé" },
+  ];
+
   return (
     <div className="grid md:grid-cols-2 gap-8 md:gap-12">
       <div className="md:sticky md:top-24 h-fit">
-        <Mannequin3D selection={selection} />
+        <Mannequin3D selection={selection} pose={pose} />
+
+        <div className="mt-4 flex flex-col gap-2">
+          <label className="font-mono text-xs tracking-tag uppercase text-ink-soft">
+            Pose du mannequin (Rigged Mixamo)
+          </label>
+          <div className="flex gap-2">
+            {POSES.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPose(p.id)}
+                className={`focus-ring font-mono text-xs px-3 py-2 border transition-colors ${
+                  pose === p.id
+                    ? "bg-ink text-bone border-ink"
+                    : "border-line text-ink hover:border-ink"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <p className="font-mono text-[11px] text-muted mt-3">
-          Cliquer-glisser pour faire tourner le mannequin.
+          Cliquer-glisser pour faire tourner le mannequin. Le mannequin et les vêtements sont riggés (Mixamo) et s'adaptent dynamiquement aux poses.
         </p>
       </div>
 

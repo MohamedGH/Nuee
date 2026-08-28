@@ -2,14 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const isDev = process.env.NODE_ENV !== "production";
+
+  const scriptSrc = isDev
+    ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-eval'`
+    : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`;
+
+  const connectSrc = isDev
+    ? "connect-src 'self' https://api.stripe.com ws: wss:"
+    : "connect-src 'self' https://api.stripe.com";
 
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    scriptSrc,
     "style-src 'self' 'unsafe-inline'", // Tailwind génère du CSS via classes, pas de style inline dynamique sensible
     "img-src 'self' https: data:",
     "font-src 'self' data:",
-    "connect-src 'self' https://api.stripe.com",
+    connectSrc,
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

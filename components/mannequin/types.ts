@@ -1,5 +1,7 @@
 export type Slot = "haut" | "bas" | "robe" | "accessoire";
 
+export type PosePreset = "neutral" | "model" | "walk";
+
 export const CATEGORY_SLOT: Record<string, Slot> = {
   Manteaux: "haut",
   Vestes: "haut",
