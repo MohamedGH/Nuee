@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import { useCart } from "@/store/cart";
 import StockAlertForm from "@/components/StockAlertForm";
+import { trackAddToCart } from "@/lib/analytics";
 
 type Variant = { size: string; stock: number };
 
@@ -12,6 +13,7 @@ type Props = {
   productId: string;
   slug: string;
   name: string;
+  category: string;
   priceCents: number;
   image: string;
   variants: Variant[];
@@ -21,6 +23,7 @@ export default function AddToCart({
   productId,
   slug,
   name,
+  category,
   priceCents,
   image,
   variants,
@@ -38,6 +41,13 @@ export default function AddToCart({
   function handleAdd() {
     if (!size || outOfStock) return;
     add({ productId, slug, name, size, priceCents, image, quantity });
+    trackAddToCart({
+      item_id: productId,
+      item_name: name,
+      item_category: category,
+      price: priceCents / 100,
+      quantity,
+    });
     setAdded(true);
     setQuantity(1);
     setTimeout(() => setAdded(false), 1800);

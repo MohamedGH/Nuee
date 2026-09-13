@@ -11,6 +11,17 @@ type Order = {
   totalCents: number;
   discountCents: number;
   couponCode: string | null;
+  shippingMethod: string;
+  shippingCents: number;
+  giftWrap: boolean;
+  shippingAddress: {
+    name: string | null;
+    line1: string;
+    line2: string | null;
+    city: string | null;
+    postalCode: string | null;
+    country: string | null;
+  } | null;
   createdAt: string;
   items: {
     name: string;
@@ -129,6 +140,21 @@ export default function OrdersLookupPage() {
               <p className="font-mono text-xs text-brick mb-1">
                 Réduction {order.couponCode ? `(${order.couponCode})` : ""}: -
                 {formatPrice(order.discountCents)}
+              </p>
+            )}
+            <p className="font-mono text-xs text-ink-soft mb-1">
+              Livraison {order.shippingMethod === "express" ? "express" : "standard"} :{" "}
+              {order.shippingCents === 0 ? "offerte" : formatPrice(order.shippingCents)}
+            </p>
+            {order.giftWrap && (
+              <p className="font-mono text-xs text-ink-soft mb-1">Emballage cadeau inclus</p>
+            )}
+            {order.shippingAddress && (
+              <p className="font-mono text-xs text-ink-soft mb-3 pt-3 border-t border-line leading-relaxed">
+                Livré à : {order.shippingAddress.name && `${order.shippingAddress.name}, `}
+                {order.shippingAddress.line1}
+                {order.shippingAddress.line2 ? `, ${order.shippingAddress.line2}` : ""},{" "}
+                {order.shippingAddress.postalCode} {order.shippingAddress.city}
               </p>
             )}
             <div className="flex justify-between font-mono text-sm pt-3 border-t border-line">

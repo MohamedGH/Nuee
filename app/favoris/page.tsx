@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useFavorites } from "@/store/favorites";
 import ProductCard from "@/components/ProductCard";
+import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 
 type Product = {
   id: string;
@@ -47,11 +48,15 @@ export default function FavoritesPage() {
       </h1>
 
       {loading ? (
-        <p className="text-ink-soft">Chargement…</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
+          {ids.slice(0, 8).map((id) => (
+            <ProductCardSkeleton key={id} />
+          ))}
+        </div>
       ) : products.length === 0 ? (
         <div>
           <p className="text-ink-soft mb-6">
-            Aucune pièce enregistrée pour le moment.
+            Aucune pièce mise de côté pour l'instant.
           </p>
           <Link
             href="/produits"

@@ -46,9 +46,23 @@ export async function POST(req: NextRequest) {
     }
 
     await prisma.$transaction(async (tx) => {
+      // shipping_details porte l'adresse saisie sur la page Stripe
+      // (shipping_address_collection) ; customer_details.address est un
+      // repli si Stripe ne l'a exposée que là selon le flux emprunté.
+      const address = session.shipping_details?.address ?? session.customer_details?.address;
+      const shippingName = session.shipping_details?.name ?? session.customer_details?.name ?? null;
+
       await tx.order.update({
         where: { id: order.id },
-        data: { status: "payée" },
+        data: {
+          status: "payée",
+          shippingName,
+          shippingLine1: address?.line1 ?? null,
+          shippingLine2: address?.line2 ?? null,
+          shippingCity: address?.city ?? null,
+          shippingPostal: address?.postal_code ?? null,
+          shippingCountry: address?.country ?? null,
+        },
       });
 
       for (const item of order.items) {

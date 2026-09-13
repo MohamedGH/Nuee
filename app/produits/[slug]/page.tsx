@@ -1,16 +1,17 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/format";
+import { colorHex } from "@/lib/colors";
 import AddToCart from "@/components/AddToCart";
-import FavoriteButton from "@/components/FavoriteButton";
+import ProductGallery from "@/components/ProductGallery";
 import RelatedProducts from "@/components/RelatedProducts";
 import ReviewsSection from "@/components/ReviewsSection";
 import SizeGuide from "@/components/SizeGuide";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import RecentlyViewed from "@/components/RecentlyViewed";
 import TrackRecentlyViewed from "@/components/TrackRecentlyViewed";
+import TrackViewItem from "@/components/TrackViewItem";
 import StarRating from "@/components/StarRating";
 import { CATEGORY_SLOT } from "@/components/mannequin/types";
 import { Shirt } from "lucide-react";
@@ -33,6 +34,7 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const colors = product.colors.split(",");
+  const galleryImages = [product.image, ...(product.images?.split(",").filter(Boolean) ?? [])];
   const averageRating =
     product.reviews.length > 0
       ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
@@ -47,6 +49,12 @@ export default async function ProductPage({
   return (
     <div>
       <TrackRecentlyViewed productId={product.id} />
+      <TrackViewItem
+        id={product.id}
+        name={product.name}
+        category={product.category}
+        priceCents={product.priceCents}
+      />
 
       <Breadcrumbs
         items={[
@@ -58,19 +66,12 @@ export default async function ProductPage({
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 py-6 md:py-10 grid md:grid-cols-2 gap-8 md:gap-12">
-        <div className="relative aspect-[4/5]">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            className="object-cover"
-            priority
-          />
-          <span className="absolute top-4 left-4 bg-bone/90 font-mono text-[10px] tracking-tag px-2 py-1">
-            LOOK N°{String(product.lookNumber).padStart(2, "0")}
-          </span>
-          <FavoriteButton productId={product.id} className="absolute top-4 right-4" />
-        </div>
+        <ProductGallery
+          images={galleryImages}
+          alt={product.name}
+          lookNumber={product.lookNumber}
+          productId={product.id}
+        />
 
         <div className="max-w-md">
           <p className="font-mono text-xs tracking-tag uppercase text-brick mb-3">
@@ -96,8 +97,13 @@ export default async function ProductPage({
             {colors.map((c) => (
               <span
                 key={c}
-                className="font-mono text-xs border border-line px-3 py-1.5 text-ink-soft"
+                className="flex items-center gap-2 font-mono text-xs border border-line px-3 py-1.5 text-ink-soft"
               >
+                <span
+                  className="w-2.5 h-2.5 rounded-full border border-line/50 shrink-0"
+                  style={{ backgroundColor: colorHex(c) }}
+                  aria-hidden
+                />
                 {c}
               </span>
             ))}
@@ -122,6 +128,7 @@ export default async function ProductPage({
             productId={product.id}
             slug={product.slug}
             name={product.name}
+            category={product.category}
             priceCents={product.priceCents}
             image={product.image}
             variants={product.variants.map((v) => ({ size: v.size, stock: v.stock }))}

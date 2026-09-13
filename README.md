@@ -33,8 +33,48 @@ stripe listen --forward-to localhost:3000/api/webhook
 (nécessite le CLI Stripe : `brew install stripe/stripe-cli/stripe` ou
 équivalent). Copie le `whsec_...` affiché dans `.env.local`.
 
+## Analytique
+
+Google Analytics 4 + Microsoft Clarity (heatmaps, replays de session) —
+tous deux optionnels et **désactivés par défaut**. Renseigne
+`NEXT_PUBLIC_GA_MEASUREMENT_ID` et/ou `NEXT_PUBLIC_CLARITY_ID` dans
+`.env.local` pour les activer ; sans ces variables, aucun script de suivi
+n'est chargé et le bandeau de consentement ne s'affiche pas.
+
+Même configurés, les scripts ne se chargent qu'après acceptation du
+bandeau de cookies (rien n'est déposé avant, conformément au RGPD). Le
+choix est mémorisé dans `localStorage`.
+
+Événements e-commerce suivis (GA4) : `view_item`, `search`, `add_to_cart`,
+`begin_checkout`, `purchase` (avec valeur, réduction, frais de port et
+articles) — de quoi reconstituer le tunnel de conversion complet.
+
+## Espace administrateur
+
+`/admin` — tableau de bord (avec commandes récentes), commandes (recherche,
+filtre par statut, détail avec adresse de livraison, changement de statut),
+produits (nom/description/prix), stock, alertes réassort, modération des
+avis, coupons, abonnés newsletter.
+
+```bash
+npm run admin:hash -- "un-mot-de-passe-d-au-moins-12-caracteres"
+# copie le hash affiché dans ADMIN_PASSWORD_HASH (.env.local)
+# ajoute aussi ADMIN_SESSION_SECRET (32+ caractères aléatoires,
+# par ex. `openssl rand -hex 32`)
+```
+
+Sans ces deux variables, `/admin` reste inaccessible (503 à la connexion).
+Session de 12h, cookie signé httpOnly/secure/SameSite=Strict, connexion
+limitée à 8 tentatives / 15 min par IP. Détail dans `SECURITY.md`.
+
 ## Fonctionnalités
 
+- Newsletter (inscription en pied de page, liste consultable en admin)
+- Galerie photo sur chaque fiche produit (miniatures + vue principale)
+- Livraison : choix standard/express avec seuil de livraison offerte
+  (barre de progression dans le panier), adresse collectée par Stripe à
+  l'étape de paiement, coût recalculé côté serveur
+- Emballage cadeau en option
 - Essayage 3D (`/essayage`) : mannequin stylisé (Three.js / React Three
   Fiber), sélection de pièces par emplacement (haut / bas / robe /
   accessoire), rotation à la souris, ajout de la tenue complète au panier
@@ -72,8 +112,10 @@ stripe listen --forward-to localhost:3000/api/webhook
 - Remplacer les images `picsum.photos` par de vraies photos produit.
 - Ajouter une authentification si besoin d'un espace client / suivi de
   commandes.
-- Le mannequin 3D (`/essayage`) est un essayage stylisé, pas un rendu
-  photoréaliste : les vêtements sont représentés par des formes géométriques
-  simples colorées à partir du premier coloris du produit. Pour un vrai
-  essayage visuel, il faudrait des modèles 3D de vêtements (GLTF) déformés
-  sur un squelette (rigging), ce qui dépasse le cadre de cette démo.
+- Le mannequin 3D (`/essayage`) est un buste de couturier stylisé et un
+  tissu procédural (texture tissée + drapé/plis générés sur la géométrie),
+  pas un scan photoréaliste : le bac à sable de génération n'a pas accès
+  aux dépôts de modèles 3D externes (Sketchfab, Mixamo…), seulement à
+  npm/GitHub. Pour un vrai essayage visuel avec de vraies pièces, il
+  faudrait des modèles GLTF de vêtements déformés sur un squelette
+  (rigging) — à envisager si tu veux fournir/licencier ces assets.

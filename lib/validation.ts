@@ -13,6 +13,8 @@ export const checkoutSchema = z.object({
     .max(32)
     .optional()
     .or(z.literal("")),
+  shippingMethod: z.enum(["standard", "express"]).default("standard"),
+  giftWrap: z.boolean().default(false),
   items: z
     .array(
       z.object({

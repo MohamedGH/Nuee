@@ -5,6 +5,36 @@ en production réelle avec de vrais paiements.
 
 ## En place
 
+**Analytique (Google Analytics / Microsoft Clarity)**
+- Désactivée par défaut — aucun script ne se charge sans
+  `NEXT_PUBLIC_GA_MEASUREMENT_ID`/`NEXT_PUBLIC_CLARITY_ID` configurés.
+- Même configurée, chargée uniquement après consentement explicite
+  (bandeau cookies, choix mémorisé en `localStorage`) — jamais avant.
+- `/api/orders/by-session` (utilisé pour le suivi d'achat) ne renvoie ni
+  email ni adresse, seulement les montants et le contenu de la commande.
+- Domaines Google/Clarity ajoutés explicitement à `connect-src` dans la CSP
+  (`middleware.ts`) ; les scripts eux-mêmes héritent de la confiance du
+  nonce via `'strict-dynamic'`, déjà en place.
+
+**Espace admin (`/admin`)**
+- Mot de passe jamais stocké en clair : seul son hash bcrypt
+  (`ADMIN_PASSWORD_HASH`, coût 12) est conservé, généré via
+  `npm run admin:hash`.
+- Session signée par HMAC-SHA256 (`ADMIN_SESSION_SECRET`), comparaison en
+  temps constant (`timingSafeEqual`), expiration à 12h côté serveur — pas
+  seulement côté cookie.
+- Cookie `httpOnly`, `secure` en production, `SameSite=Strict` — inaccessible
+  en JavaScript et jamais envoyé cross-site.
+- Le vrai contrôle d'accès a lieu en runtime Node (`requireAdmin()` dans
+  chaque layout de page, `isAdminRequest()` dans chaque route `/api/admin/*`)
+  — le middleware ne fait qu'une redirection rapide basée sur la présence du
+  cookie (impossible de vérifier une signature HMAC en runtime Edge sans
+  Web Crypto), jamais la décision d'autorisation finale.
+- Vérification d'origine (`isSameOrigin()`) sur toutes les routes de
+  mutation admin, en plus du cookie `SameSite=Strict` — défense en
+  profondeur contre le CSRF.
+- Connexion limitée à 8 tentatives / 15 min par IP.
+
 **Intégrité du paiement**
 - Le prix envoyé à Stripe est toujours relu en base de données côté serveur
   (`app/api/checkout/route.ts`) — le client ne peut jamais influencer le
@@ -33,7 +63,11 @@ en production réelle avec de vrais paiements.
 
 **Réseau / navigateur**
 - Content-Security-Policy stricte basée sur un nonce généré par requête
-  (`middleware.ts`) — bloque l'exécution de scripts injectés (XSS).
+  (`middleware.ts`) — bloque l'exécution de scripts injectés (XSS). En
+  développement, `'unsafe-eval'` et `ws:` sont ajoutés uniquement parce que
+  le rechargement à chaud (React Refresh) de Next.js en a besoin — ces
+  deux exceptions disparaissent automatiquement en production
+  (`NODE_ENV=production`), où la CSP reste stricte.
 - En-têtes `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
   `Referrer-Policy`, `Permissions-Policy`, `Strict-Transport-Security`
   (`next.config.js`).

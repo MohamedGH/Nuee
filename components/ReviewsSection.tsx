@@ -39,26 +39,32 @@ export default function ReviewsSection({
       ) : (
         <div className="grid md:grid-cols-2 gap-x-12 gap-y-8">
           {reviews.map((r) => (
-            <div key={r.id} className="border-b border-line pb-6">
-              <div className="flex items-center justify-between mb-2">
-                <StarRating rating={r.rating} />
-                <p className="font-mono text-[11px] text-muted">
-                  {new Date(r.createdAt).toLocaleDateString("fr-FR", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </p>
+            <div key={r.id} className="flex gap-3 border-b border-line pb-6">
+              <div
+                className="shrink-0 w-9 h-9 rounded-full bg-ink text-bone font-mono text-xs flex items-center justify-center"
+                aria-hidden
+              >
+                {r.authorName.trim().charAt(0).toUpperCase()}
               </div>
-              <p className="text-sm text-ink-soft leading-relaxed mb-2">
-                {r.comment}
-              </p>
-              <p className="font-mono text-xs">
-                {r.authorName}
-                {r.verified && (
-                  <span className="text-brick ml-2">Achat vérifié</span>
-                )}
-              </p>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="font-mono text-xs">
+                    {r.authorName}
+                    {r.verified && <span className="text-brick ml-2">Achat vérifié</span>}
+                  </p>
+                  <p className="font-mono text-[11px] text-muted shrink-0 pl-3">
+                    {new Date(r.createdAt).toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <div className="mb-2">
+                  <StarRating rating={r.rating} />
+                </div>
+                <p className="text-sm text-ink-soft leading-relaxed">{r.comment}</p>
+              </div>
             </div>
           ))}
         </div>

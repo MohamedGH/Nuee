@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
 import SearchBar from "@/components/SearchBar";
 import SortSelect from "@/components/SortSelect";
+import PriceFilter from "@/components/PriceFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -95,13 +96,25 @@ export default async function CatalogPage({
             </Link>
           ))}
         </div>
-        <SortSelect currentSort={sort} basePath={keepParams({ sort: undefined })} />
+        <div className="flex items-center gap-3">
+          <PriceFilter defaultMin={min} defaultMax={max} />
+          <SortSelect currentSort={sort} basePath={keepParams({ sort: undefined })} />
+        </div>
       </div>
 
-      {q && (
-        <p className="font-mono text-xs text-ink-soft mb-6">
-          {products.length} résultat{products.length !== 1 ? "s" : ""} pour «&nbsp;{q}&nbsp;»
-        </p>
+      {(q || cat || min !== undefined || max !== undefined) && (
+        <div className="flex items-center justify-between mb-6">
+          <p className="font-mono text-xs text-ink-soft">
+            {products.length} résultat{products.length !== 1 ? "s" : ""}
+            {q ? <> pour «&nbsp;{q}&nbsp;»</> : null}
+          </p>
+          <Link
+            href="/produits"
+            className="focus-ring font-mono text-xs text-ink-soft hover:text-ink underline underline-offset-4"
+          >
+            Réinitialiser les filtres
+          </Link>
+        </div>
       )}
 
       {products.length === 0 ? (

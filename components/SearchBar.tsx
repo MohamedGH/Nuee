@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { useState } from "react";
+import { trackSearch } from "@/lib/analytics";
 
 export default function SearchBar({ defaultValue }: { defaultValue?: string }) {
   const [value, setValue] = useState(defaultValue || "");
@@ -12,8 +13,12 @@ export default function SearchBar({ defaultValue }: { defaultValue?: string }) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const params = new URLSearchParams(searchParams?.toString());
-    if (value.trim()) params.set("q", value.trim());
-    else params.delete("q");
+    if (value.trim()) {
+      params.set("q", value.trim());
+      trackSearch(value.trim());
+    } else {
+      params.delete("q");
+    }
     router.push(`/produits?${params.toString()}`);
   }
 

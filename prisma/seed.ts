@@ -93,7 +93,15 @@ const products = [
     image: "https://picsum.photos/seed/nuee-versant/900/1150",
     colors: "Brick,Ink",
   },
-];
+].map((p) => ({
+  ...p,
+  // Deux vues supplémentaires (détail, porté) pour la galerie de la fiche
+  // produit — dérivées du même slug pour rester stables entre les seeds.
+  images: [
+    `https://picsum.photos/seed/${p.slug}-detail/900/1150`,
+    `https://picsum.photos/seed/${p.slug}-porte/900/1150`,
+  ].join(","),
+}));
 
 async function main() {
   console.log("Nettoyage...");

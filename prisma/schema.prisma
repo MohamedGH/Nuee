@@ -16,6 +16,7 @@ model Product {
   priceCents  Int
   lookNumber  Int
   image       String
+  images      String? // URLs additionnelles séparées par des virgules, pour la galerie
   colors      String
   createdAt   DateTime  @default(now())
   variants    Variant[]
@@ -42,6 +43,15 @@ model Order {
   totalCents      Int
   discountCents   Int         @default(0)
   couponCode      String?
+  shippingMethod  String      @default("standard")
+  shippingCents   Int         @default(0)
+  giftWrap        Boolean     @default(false)
+  shippingName    String?
+  shippingLine1   String?
+  shippingLine2   String?
+  shippingCity    String?
+  shippingPostal  String?
+  shippingCountry String?
   createdAt       DateTime    @default(now())
   items           OrderItem[]
 }
@@ -92,4 +102,10 @@ model StockAlert {
   createdAt DateTime @default(now())
 
   @@unique([productId, size, email])
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
 }

@@ -3,6 +3,7 @@ import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { checkoutSchema } from "@/lib/validation";
 import { resolveCoupon } from "@/lib/coupon";
+import { shippingCostCents, GIFT_WRAP_CENTS } from "@/lib/shipping";
 import { rateLimit, clientIp } from "@/lib/rateLimit";
 import { env } from "@/lib/env";
 
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const { items, email, couponCode } = parsed.data;
+    const { items, email, couponCode, shippingMethod, giftWrap } = parsed.data;
 
     // 4. Vérité serveur : on ne fait JAMAIS confiance au prix envoyé par le
     // client. On relit chaque produit/variante en base et on reconstruit
@@ -90,7 +91,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const line_items = verifiedItems.map((item) => ({
+    type LineItem = {
+      price_data: {
+        currency: string;
+        product_data: { name: string; images?: string[] };
+        unit_amount: number;
+      };
+      quantity: number;
+    };
+
+    const line_items: LineItem[] = verifiedItems.map((item) => ({
       price_data: {
         currency: "eur",
         product_data: {
@@ -132,12 +142,39 @@ export async function POST(req: NextRequest) {
       discounts = [{ coupon: stripeCoupon.id }];
     }
 
+    // 6. Livraison et emballage cadeau — coûts fixés côté serveur
+    // (lib/shipping.ts), jamais envoyés par le client.
+    const shippingCents = shippingCostCents(subtotal, shippingMethod);
+    if (shippingCents > 0) {
+      line_items.push({
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: shippingMethod === "express" ? "Livraison express" : "Livraison standard",
+          },
+          unit_amount: shippingCents,
+        },
+        quantity: 1,
+      });
+    }
+    if (giftWrap) {
+      line_items.push({
+        price_data: {
+          currency: "eur",
+          product_data: { name: "Emballage cadeau" },
+          unit_amount: GIFT_WRAP_CENTS,
+        },
+        quantity: 1,
+      });
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card", "paypal"],
       line_items,
       discounts,
       customer_email: email,
+      shipping_address_collection: { allowed_countries: ["FR", "BE", "CH", "LU", "MC"] },
       success_url: `${safeOrigin}/commande/succes?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${safeOrigin}/commande/annule`,
     });
@@ -146,9 +183,12 @@ export async function POST(req: NextRequest) {
       data: {
         stripeSessionId: session.id,
         customerEmail: email,
-        totalCents: subtotal - discountCents,
+        totalCents: subtotal - discountCents + shippingCents + (giftWrap ? GIFT_WRAP_CENTS : 0),
         discountCents,
         couponCode: appliedCoupon,
+        shippingMethod,
+        shippingCents,
+        giftWrap,
         status: "pending",
         items: {
           create: verifiedItems.map((i) => ({

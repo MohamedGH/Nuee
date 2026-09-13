@@ -99,38 +99,43 @@ export default function EssayageClient({
       </div>
 
       <div className="flex flex-col gap-8">
-        <SlotPicker
-          label="Hauts"
-          products={groups.haut}
-          selectedId={selected.haut?.id ?? null}
-          onSelect={(p) => setSlot("haut", p)}
-          disabled={!!selected.robe}
-        />
-        <SlotPicker
-          label="Bas"
-          products={groups.bas}
-          selectedId={selected.bas?.id ?? null}
-          onSelect={(p) => setSlot("bas", p)}
-          disabled={!!selected.robe}
-        />
-        <SlotPicker
-          label="Robes"
-          products={groups.robe}
-          selectedId={selected.robe?.id ?? null}
-          onSelect={(p) => setSlot("robe", p)}
-        />
-        <SlotPicker
-          label="Accessoires"
-          products={groups.accessoire}
-          selectedId={selected.accessoire?.id ?? null}
-          onSelect={(p) => setSlot("accessoire", p)}
-        />
-
-        {selected.robe && (
-          <p className="font-mono text-[11px] text-muted -mt-4">
-            Une robe remplace le haut et le bas sur le mannequin.
+        <div className="flex flex-col gap-8">
+          <p className="font-display text-xl italic border-b border-line pb-4">
+            Composez la tenue
           </p>
-        )}
+          <SlotPicker
+            label="Hauts"
+            products={groups.haut}
+            selectedId={selected.haut?.id ?? null}
+            onSelect={(p) => setSlot("haut", p)}
+            disabled={!!selected.robe}
+          />
+          <SlotPicker
+            label="Bas"
+            products={groups.bas}
+            selectedId={selected.bas?.id ?? null}
+            onSelect={(p) => setSlot("bas", p)}
+            disabled={!!selected.robe}
+          />
+          <SlotPicker
+            label="Robes"
+            products={groups.robe}
+            selectedId={selected.robe?.id ?? null}
+            onSelect={(p) => setSlot("robe", p)}
+          />
+          <SlotPicker
+            label="Accessoires"
+            products={groups.accessoire}
+            selectedId={selected.accessoire?.id ?? null}
+            onSelect={(p) => setSlot("accessoire", p)}
+          />
+
+          {selected.robe && (
+            <p className="font-mono text-[11px] text-muted -mt-4">
+              Une robe remplace le haut et le bas sur le mannequin.
+            </p>
+          )}
+        </div>
 
         {items.length > 0 && (
           <div className="border border-line p-6">

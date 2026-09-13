@@ -36,6 +36,19 @@ export async function GET(req: NextRequest) {
       totalCents: o.totalCents,
       discountCents: o.discountCents,
       couponCode: o.couponCode,
+      shippingMethod: o.shippingMethod,
+      shippingCents: o.shippingCents,
+      giftWrap: o.giftWrap,
+      shippingAddress: o.shippingLine1
+        ? {
+            name: o.shippingName,
+            line1: o.shippingLine1,
+            line2: o.shippingLine2,
+            city: o.shippingCity,
+            postalCode: o.shippingPostal,
+            country: o.shippingCountry,
+          }
+        : null,
       createdAt: o.createdAt,
       items: o.items.map((i) => ({
         name: i.product.name,

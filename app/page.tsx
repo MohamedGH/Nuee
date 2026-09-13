@@ -38,25 +38,47 @@ export default async function HomePage() {
         </div>
         <div className="md:col-span-5 relative aspect-[3/4]">
           {products[0] && (
-            <Image
-              src={products[0].image}
-              alt={products[0].name}
-              fill
-              className="object-cover"
-              priority
-            />
+            <>
+              <Image
+                src={products[0].image}
+                alt={products[0].name}
+                fill
+                className="object-cover"
+                priority
+              />
+              <span className="absolute top-3 left-3 bg-bone/90 font-mono text-[10px] tracking-tag px-2 py-1">
+                LOOK N°{String(products[0].lookNumber).padStart(2, "0")}
+              </span>
+            </>
           )}
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 pb-24">
+      <section className="bg-ink text-bone py-16 md:py-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 grid md:grid-cols-12 gap-8">
+          <p className="md:col-span-7 font-display italic text-3xl sm:text-4xl md:text-5xl leading-[1.15]">
+            Une couture, pas dix. Un ourlet laissé brut plutôt que caché.
+            La laine avant qu'on la traite.
+          </p>
+          <div className="md:col-span-4 md:col-start-9 flex flex-col justify-end">
+            <p className="text-bone/70 leading-relaxed text-sm">
+              Huit pièces, sans saison, cousues en petite série. Ce qui
+              reste visible — une couture, un fil qui dépasse — n'est pas
+              corrigé : c'est la preuve que la pièce a été faite à la main,
+              pas moulée.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 py-16 md:py-24">
         <div className="flex items-baseline justify-between mb-8 border-b border-line pb-4">
           <h2 className="font-display text-2xl italic">Les huit looks</h2>
           <Link
             href="/produits"
             className="font-mono text-xs tracking-tag uppercase text-ink-soft hover:text-ink focus-ring"
           >
-            Tout voir →
+            Tout voir
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">

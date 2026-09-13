@@ -20,17 +20,7 @@ export const CATEGORY_HAUT_STYLE: Record<string, HautStyle> = {
   Chemises: "shirt",
 };
 
-export const PALETTE: Record<string, string> = {
-  Ink: "#1C1A16",
-  Bone: "#EDE6D6",
-  Brick: "#8A3A26",
-  Muted: "#8C8578",
-};
-
-export function firstColorHex(colors: string): string {
-  const first = colors.split(",")[0]?.trim();
-  return PALETTE[first] ?? "#8C8578";
-}
+export { firstColorHex } from "@/lib/colors";
 
 export type MannequinProduct = {
   id: string;
