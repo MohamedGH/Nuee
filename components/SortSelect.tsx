@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { trackFilter } from "@/lib/analytics";
 
 const OPTIONS = [
   { value: "nouveautes", label: "Nouveautés" },
@@ -19,6 +20,7 @@ export default function SortSelect({
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const value = e.target.value;
+    trackFilter({ sort: value });
     const separator = basePath.includes("?") ? "&" : "?";
     router.push(value === "nouveautes" ? basePath : `${basePath}${separator}sort=${value}`);
   }

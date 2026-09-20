@@ -52,6 +52,8 @@ model Order {
   shippingCity    String?
   shippingPostal  String?
   shippingCountry String?
+  gaClientId      String? // client_id GA4 côté navigateur, pour l'event purchase envoyé depuis le webhook
+  gaPurchaseSent  Boolean     @default(false)
   createdAt       DateTime    @default(now())
   items           OrderItem[]
 }

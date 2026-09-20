@@ -26,8 +26,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Introuvable" }, { status: 404 });
   }
 
-  // Volontairement minimal : ni email ni adresse ne sont renvoyés ici, ce
-  // endpoint ne sert qu'à alimenter le suivi analytique côté client.
+  // Volontairement minimal : ni email ni adresse ne sont renvoyés ici —
+  // sert au récapitulatif affiché sur la page de succès. Le suivi
+  // analytique de l'achat, lui, part désormais du webhook (fiable, ne
+  // dépend pas de ce que fait le navigateur après le paiement).
   return NextResponse.json({
     id: order.id,
     totalCents: order.totalCents,

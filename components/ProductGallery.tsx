@@ -3,17 +3,22 @@
 import { useState } from "react";
 import Image from "next/image";
 import FavoriteButton from "@/components/FavoriteButton";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/imagePlaceholder";
 
 export default function ProductGallery({
   images,
   alt,
   lookNumber,
   productId,
+  category,
+  priceCents,
 }: {
   images: string[];
   alt: string;
   lookNumber: number;
   productId: string;
+  category: string;
+  priceCents: number;
 }) {
   const [active, setActive] = useState(0);
 
@@ -24,13 +29,21 @@ export default function ProductGallery({
           src={images[active]}
           alt={alt}
           fill
+          placeholder="blur"
+          blurDataURL={IMAGE_BLUR_DATA_URL}
           className="object-cover"
           priority
         />
         <span className="absolute top-4 left-4 bg-bone/90 font-mono text-[10px] tracking-tag px-2 py-1">
           LOOK N°{String(lookNumber).padStart(2, "0")}
         </span>
-        <FavoriteButton productId={productId} className="absolute top-4 right-4" />
+        <FavoriteButton
+          productId={productId}
+          name={alt}
+          category={category}
+          priceCents={priceCents}
+          className="absolute top-4 right-4"
+        />
       </div>
 
       {images.length > 1 && (
@@ -47,7 +60,14 @@ export default function ProductGallery({
                 active === i ? "border-ink border-2" : "border-line"
               }`}
             >
-              <Image src={src} alt="" fill className="object-cover" />
+              <Image
+                src={src}
+                alt=""
+                fill
+                placeholder="blur"
+                blurDataURL={IMAGE_BLUR_DATA_URL}
+                className="object-cover"
+              />
             </button>
           ))}
         </div>

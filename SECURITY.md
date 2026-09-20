@@ -10,6 +10,19 @@ en production réelle avec de vrais paiements.
   `NEXT_PUBLIC_GA_MEASUREMENT_ID`/`NEXT_PUBLIC_CLARITY_ID` configurés.
 - Même configurée, chargée uniquement après consentement explicite
   (bandeau cookies, choix mémorisé en `localStorage`) — jamais avant.
+- L'event `purchase` envoyé depuis le webhook (Measurement Protocol) ne
+  part que si un `client_id` a été capturé au moment du paiement — ce qui
+  suppose que GA était chargé, donc que la personne avait consenti.
+  Aucun envoi serveur si elle avait refusé ou si GA n'est pas configuré.
+  `GA4_API_SECRET` reste strictement serveur, jamais `NEXT_PUBLIC_`.
+- Signal navigateur "Global Privacy Control" ou "Do Not Track" détecté
+  automatiquement (`lib/privacySignals.ts`) : refus appliqué sans même
+  afficher le bandeau, non contournable par un clic ultérieur sur cet
+  appareil.
+- API Topics (`NEXT_PUBLIC_ENABLE_TOPICS`) : désactivée par défaut, gérée
+  par le même bandeau de consentement — traite des centres d'intérêt
+  dérivés de la navigation, soumis au même raisonnement RGPD que les
+  cookies d'analyse malgré l'absence de cookie tiers.
 - `/api/orders/by-session` (utilisé pour le suivi d'achat) ne renvoie ni
   email ni adresse, seulement les montants et le contenu de la commande.
 - Domaines Google/Clarity ajoutés explicitement à `connect-src` dans la CSP

@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const { items, email, couponCode, shippingMethod, giftWrap } = parsed.data;
+    const { items, email, couponCode, shippingMethod, giftWrap, gaClientId } = parsed.data;
 
     // 4. Vérité serveur : on ne fait JAMAIS confiance au prix envoyé par le
     // client. On relit chaque produit/variante en base et on reconstruit
@@ -189,6 +189,7 @@ export async function POST(req: NextRequest) {
         shippingMethod,
         shippingCents,
         giftWrap,
+        gaClientId: gaClientId || null,
         status: "pending",
         items: {
           create: verifiedItems.map((i) => ({

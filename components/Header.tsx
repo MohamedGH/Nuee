@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { Menu, X, ShoppingBag, Heart, Search } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { useFavorites } from "@/store/favorites";
+import CountBadge from "@/components/CountBadge";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 
 const links = [
   { href: "/produits", label: "Collection" },
@@ -21,16 +23,10 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
+  const menuRef = useFocusTrap<HTMLElement>(menuOpen, () => setMenuOpen(false));
 
   useEffect(() => setMounted(true), []);
   useEffect(() => setMenuOpen(false), [pathname]);
-
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [menuOpen]);
 
   return (
     <header className="sticky top-0 z-40 bg-bone/95 backdrop-blur border-b border-line">
@@ -64,23 +60,17 @@ export default function Header() {
             className="focus-ring relative p-2 hover:text-brick"
           >
             <Heart size={18} aria-hidden />
-            {mounted && favCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-brick text-bone text-[10px] font-mono w-4 h-4 flex items-center justify-center rounded-full">
-                {favCount}
-              </span>
-            )}
+            {mounted && <CountBadge count={favCount} />}
           </Link>
 
           <Link
             href="/panier"
             aria-label="Voir le panier"
-            className="focus-ring font-mono text-xs tracking-tag uppercase flex items-center gap-2 border border-ink px-3 md:px-4 py-2 hover:bg-ink hover:text-bone transition-colors"
+            className="focus-ring relative font-mono text-xs tracking-tag uppercase flex items-center gap-2 border border-ink px-3 md:px-4 py-2 hover:bg-ink hover:text-bone transition-colors"
           >
             <ShoppingBag size={16} className="md:hidden" aria-hidden />
-            <span className="hidden md:inline">
-              Panier {mounted && count > 0 ? `(${count})` : ""}
-            </span>
-            {mounted && count > 0 && <span className="md:hidden">{count}</span>}
+            <span className="hidden md:inline">Panier</span>
+            {mounted && <CountBadge count={count} />}
           </Link>
 
           <button
@@ -88,6 +78,7 @@ export default function Header() {
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
             aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
             className="focus-ring md:hidden p-2 -mr-2 border border-transparent hover:border-ink"
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -97,6 +88,8 @@ export default function Header() {
 
       {menuOpen && (
         <nav
+          id="mobile-menu"
+          ref={menuRef}
           className="md:hidden fixed inset-x-0 top-16 bottom-0 bg-bone z-50 px-6 py-10 flex flex-col gap-1 overflow-y-auto"
           aria-label="Menu principal"
         >

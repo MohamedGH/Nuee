@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/format";
 import { colorHex } from "@/lib/colors";
+import { SITE_URL } from "@/lib/site";
 import AddToCart from "@/components/AddToCart";
 import ProductGallery from "@/components/ProductGallery";
 import RelatedProducts from "@/components/RelatedProducts";
@@ -13,10 +15,44 @@ import RecentlyViewed from "@/components/RecentlyViewed";
 import TrackRecentlyViewed from "@/components/TrackRecentlyViewed";
 import TrackViewItem from "@/components/TrackViewItem";
 import StarRating from "@/components/StarRating";
+import JsonLd from "@/components/JsonLd";
 import { CATEGORY_SLOT } from "@/components/mannequin/types";
 import { Shirt } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const product = await prisma.product.findUnique({ where: { slug: params.slug } });
+  if (!product) return {};
+
+  const url = `${SITE_URL}/produits/${product.slug}`;
+  const description = product.description.length > 155
+    ? `${product.description.slice(0, 152)}…`
+    : product.description;
+
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "website",
+      title: product.name,
+      description,
+      url,
+      images: [{ url: product.image, width: 900, height: 1150, alt: product.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description,
+      images: [product.image],
+    },
+  };
+}
 
 export default async function ProductPage({
   params,
@@ -48,6 +84,66 @@ export default async function ProductPage({
 
   return (
     <div>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: product.name,
+          description: product.description,
+          image: [product.image, ...galleryImages.slice(1)],
+          sku: product.id,
+          category: product.category,
+          brand: { "@type": "Brand", name: "NUÉE" },
+          offers: {
+            "@type": "Offer",
+            url: `${SITE_URL}/produits/${product.slug}`,
+            priceCurrency: "EUR",
+            price: (product.priceCents / 100).toFixed(2),
+            availability: product.variants.some((v) => v.stock > 0)
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
+          },
+          ...(product.reviews.length > 0
+            ? {
+                aggregateRating: {
+                  "@type": "AggregateRating",
+                  ratingValue: averageRating.toFixed(1),
+                  reviewCount: product.reviews.length,
+                },
+                review: product.reviews.slice(0, 10).map((r) => ({
+                  "@type": "Review",
+                  author: { "@type": "Person", name: r.authorName },
+                  datePublished: r.createdAt.toISOString().slice(0, 10),
+                  reviewBody: r.comment,
+                  reviewRating: {
+                    "@type": "Rating",
+                    ratingValue: r.rating,
+                    bestRating: 5,
+                    worstRating: 1,
+                  },
+                })),
+              }
+            : {}),
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Accueil", item: SITE_URL },
+            { "@type": "ListItem", position: 2, name: "Collection", item: `${SITE_URL}/produits` },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: product.category,
+              item: `${SITE_URL}/produits?cat=${encodeURIComponent(product.category)}`,
+            },
+            { "@type": "ListItem", position: 4, name: product.name, item: `${SITE_URL}/produits/${product.slug}` },
+          ],
+        }}
+      />
+
       <TrackRecentlyViewed productId={product.id} />
       <TrackViewItem
         id={product.id}
@@ -71,6 +167,8 @@ export default async function ProductPage({
           alt={product.name}
           lookNumber={product.lookNumber}
           productId={product.id}
+          category={product.category}
+          priceCents={product.priceCents}
         />
 
         <div className="max-w-md">

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+﻿import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +10,7 @@ const products = [
     name: "Manteau Arche",
     category: "Manteaux",
     description:
-      "Manteau long en laine mélangée, épaules structurées et doublure satin. Coupe droite pensée pour durer plusieurs saisons.",
+      "Manteau long en laine mÃ©langÃ©e, Ã©paules structurÃ©es et doublure satin. Coupe droite pensÃ©e pour durer plusieurs saisons.",
     priceCents: 39000,
     lookNumber: 1,
     image: "https://picsum.photos/seed/nuee-arche/900/1150",
@@ -18,10 +18,10 @@ const products = [
   },
   {
     slug: "veste-carre",
-    name: "Veste Carré",
+    name: "Veste CarrÃ©",
     category: "Vestes",
     description:
-      "Veste courte en toile de coton dense, col officier et fermeture à boutons cornés. Silhouette carrée, ni cintrée ni ample.",
+      "Veste courte en toile de coton dense, col officier et fermeture Ã  boutons cornÃ©s. Silhouette carrÃ©e, ni cintrÃ©e ni ample.",
     priceCents: 24500,
     lookNumber: 2,
     image: "https://picsum.photos/seed/nuee-carre/900/1150",
@@ -29,10 +29,10 @@ const products = [
   },
   {
     slug: "pull-lisiere",
-    name: "Pull Lisière",
+    name: "Pull LisiÃ¨re",
     category: "Pulls",
     description:
-      "Maille côtelée en laine mérinos, finitions bord-côte apparentes. Col rond bas, tombe légèrement sous la ceinture.",
+      "Maille cÃ´telÃ©e en laine mÃ©rinos, finitions bord-cÃ´te apparentes. Col rond bas, tombe lÃ©gÃ¨rement sous la ceinture.",
     priceCents: 15500,
     lookNumber: 3,
     image: "https://picsum.photos/seed/nuee-lisiere/900/1150",
@@ -54,7 +54,7 @@ const products = [
     name: "Chemise Verso",
     category: "Chemises",
     description:
-      "Chemise en popeline de coton égyptien, patte de boutonnage asymétrique. Se porte devant comme derrière.",
+      "Chemise en popeline de coton Ã©gyptien, patte de boutonnage asymÃ©trique. Se porte devant comme derriÃ¨re.",
     priceCents: 14500,
     lookNumber: 5,
     image: "https://picsum.photos/seed/nuee-verso/900/1150",
@@ -65,7 +65,7 @@ const products = [
     name: "Robe Monolithe",
     category: "Robes",
     description:
-      "Robe longue en crêpe mat, une seule couture latérale. Tombe droite du buste à l'ourlet, sans pince.",
+      "Robe longue en crÃªpe mat, une seule couture latÃ©rale. Tombe droite du buste Ã  l'ourlet, sans pince.",
     priceCents: 29500,
     lookNumber: 6,
     image: "https://picsum.photos/seed/nuee-monolithe/900/1150",
@@ -73,10 +73,10 @@ const products = [
   },
   {
     slug: "echarpe-corde",
-    name: "Écharpe Corde",
+    name: "Ã‰charpe Corde",
     category: "Accessoires",
     description:
-      "Écharpe tricotée en grosse maille torsadée, laine brute non traitée. Frangée aux deux extrémités.",
+      "Ã‰charpe tricotÃ©e en grosse maille torsadÃ©e, laine brute non traitÃ©e. FrangÃ©e aux deux extrÃ©mitÃ©s.",
     priceCents: 8900,
     lookNumber: 7,
     image: "https://picsum.photos/seed/nuee-corde/900/1150",
@@ -87,7 +87,7 @@ const products = [
     name: "Trench Versant",
     category: "Manteaux",
     description:
-      "Trench en coton ciré déperlant, ceinture amovible et martingale simplifiée. Longueur mi-mollet.",
+      "Trench en coton cirÃ© dÃ©perlant, ceinture amovible et martingale simplifiÃ©e. Longueur mi-mollet.",
     priceCents: 42500,
     lookNumber: 8,
     image: "https://picsum.photos/seed/nuee-versant/900/1150",
@@ -95,8 +95,8 @@ const products = [
   },
 ].map((p) => ({
   ...p,
-  // Deux vues supplémentaires (détail, porté) pour la galerie de la fiche
-  // produit — dérivées du même slug pour rester stables entre les seeds.
+  // Deux vues supplÃ©mentaires (dÃ©tail, portÃ©) pour la galerie de la fiche
+  // produit â€” dÃ©rivÃ©es du mÃªme slug pour rester stables entre les seeds.
   images: [
     `https://picsum.photos/seed/${p.slug}-detail/900/1150`,
     `https://picsum.photos/seed/${p.slug}-porte/900/1150`,
@@ -107,11 +107,11 @@ async function main() {
   console.log("Nettoyage...");
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.stockAlert.deleteMany();
   await prisma.variant.deleteMany();
   await prisma.product.deleteMany();
   await prisma.coupon.deleteMany();
-  await prisma.review.deleteMany();
-  await prisma.stockAlert.deleteMany();
 
   await prisma.coupon.createMany({
     data: [
@@ -122,17 +122,17 @@ async function main() {
   });
 
   const sampleReviews = [
-    { authorName: "Camille D.", rating: 5, comment: "La matière est bien plus belle qu'en photo, coupe impeccable." },
-    { authorName: "Yanis B.", rating: 4, comment: "Très belle pièce, taille un peu grand, prendre une taille en dessous." },
-    { authorName: "Sarah L.", rating: 5, comment: "Exactement ce que je cherchais, la finition est soignée." },
-    { authorName: "Hugo M.", rating: 3, comment: "Joli mais le délai de livraison a été un peu long." },
+    { authorName: "Camille D.", rating: 5, comment: "La matiÃ¨re est bien plus belle qu'en photo, coupe impeccable." },
+    { authorName: "Yanis B.", rating: 4, comment: "TrÃ¨s belle piÃ¨ce, taille un peu grand, prendre une taille en dessous." },
+    { authorName: "Sarah L.", rating: 5, comment: "Exactement ce que je cherchais, la finition est soignÃ©e." },
+    { authorName: "Hugo M.", rating: 3, comment: "Joli mais le dÃ©lai de livraison a Ã©tÃ© un peu long." },
   ];
 
   for (const p of products) {
     const created = await prisma.product.create({ data: p });
     for (const size of sizes) {
       // Une taille sur six est volontairement en rupture, pour pouvoir
-      // tester l'alerte de réassort.
+      // tester l'alerte de rÃ©assort.
       const stock = Math.random() < 0.15 ? 0 : Math.floor(Math.random() * 15) + 3;
       await prisma.variant.create({
         data: { size, stock, productId: created.id },
@@ -147,10 +147,10 @@ async function main() {
       });
     }
 
-    console.log(`Créé: ${created.name}`);
+    console.log(`CrÃ©Ã©: ${created.name}`);
   }
 
-  console.log("Terminé.");
+  console.log("TerminÃ©.");
 }
 
 main()
@@ -161,3 +161,5 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+

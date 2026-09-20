@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/format";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/imagePlaceholder";
 
 type Order = {
   id: string;
@@ -89,7 +90,7 @@ export default function OrdersLookupPage() {
         </button>
       </form>
 
-      {error && <p className="text-brick text-sm font-mono mb-8">{error}</p>}
+      {error && <p role="alert" className="text-brick text-sm font-mono mb-8">{error}</p>}
 
       {searched && !error && orders?.length === 0 && (
         <p className="text-ink-soft text-sm">
@@ -121,7 +122,14 @@ export default function OrdersLookupPage() {
                   className="focus-ring flex gap-3 items-center"
                 >
                   <div className="relative w-12 h-14 shrink-0 bg-line">
-                    <Image src={item.image} alt={item.name} fill className="object-cover" />
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      placeholder="blur"
+                      blurDataURL={IMAGE_BLUR_DATA_URL}
+                      className="object-cover"
+                    />
                   </div>
                   <div className="flex-1 text-sm">
                     <p>{item.name}</p>

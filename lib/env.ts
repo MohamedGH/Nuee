@@ -12,6 +12,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
   NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().startsWith("G-").optional(),
   NEXT_PUBLIC_CLARITY_ID: z.string().optional(),
+  GA4_API_SECRET: z.string().optional(),
   ADMIN_PASSWORD_HASH: z.string().startsWith("$2").optional(),
   ADMIN_SESSION_SECRET: z.string().min(32, "ADMIN_SESSION_SECRET doit faire au moins 32 caractères").optional(),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),

@@ -10,7 +10,7 @@ const config: Config = {
         "ink-soft": "#4A473F",
         brick: "#7A2E1D",
         "brick-dark": "#5C2115",
-        muted: "#8C8578",
+        muted: "#6B6456",
         line: "#DAD3C4",
       },
       fontFamily: {

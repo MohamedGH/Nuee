@@ -3,13 +3,20 @@
 import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 import { useFavorites } from "@/store/favorites";
+import { trackAddToWishlist } from "@/lib/analytics";
 
 export default function FavoriteButton({
   productId,
   className = "",
+  name,
+  category,
+  priceCents,
 }: {
   productId: string;
   className?: string;
+  name?: string;
+  category?: string;
+  priceCents?: number;
 }) {
   const { has, toggle } = useFavorites();
   const [mounted, setMounted] = useState(false);
@@ -23,7 +30,16 @@ export default function FavoriteButton({
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        const wasActive = active;
         toggle(productId);
+        if (!wasActive && name && priceCents !== undefined) {
+          trackAddToWishlist({
+            item_id: productId,
+            item_name: name,
+            item_category: category,
+            price: priceCents / 100,
+          });
+        }
       }}
       aria-label={active ? "Retirer des favoris" : "Ajouter aux favoris"}
       aria-pressed={active}

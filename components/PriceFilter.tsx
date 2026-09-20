@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { trackFilter } from "@/lib/analytics";
 
 export default function PriceFilter({
   defaultMin,
@@ -17,6 +18,10 @@ export default function PriceFilter({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    trackFilter({
+      minPrice: min ? Number(min) : undefined,
+      maxPrice: max ? Number(max) : undefined,
+    });
     const params = new URLSearchParams(searchParams?.toString());
     if (min) params.set("min", min);
     else params.delete("min");

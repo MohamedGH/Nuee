@@ -109,7 +109,7 @@ export default function ReviewForm({ productId }: { productId: string }) {
         className="focus-ring w-full border border-line px-3 py-2 mb-4 bg-bone font-body text-sm"
       />
 
-      {error && <p className="text-brick text-xs mb-4 font-mono">{error}</p>}
+      {error && <p role="alert" className="text-brick text-xs mb-4 font-mono">{error}</p>}
 
       <div className="flex gap-3">
         <button

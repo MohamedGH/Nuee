@@ -108,7 +108,7 @@ export default function CouponForm() {
         />
       </div>
 
-      {error && <p className="text-brick text-xs font-mono mb-4">{error}</p>}
+      {error && <p role="alert" className="text-brick text-xs font-mono mb-4">{error}</p>}
 
       <button
         type="submit"

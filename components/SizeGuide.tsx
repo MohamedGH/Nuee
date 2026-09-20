@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 
 const CHEST_TABLE: Record<string, { tour: string; longueur: string }> = {
   XS: { tour: "84–88 cm", longueur: "66 cm" },
@@ -13,14 +14,7 @@ const CHEST_TABLE: Record<string, { tour: string; longueur: string }> = {
 
 export default function SizeGuide({ category }: { category: string }) {
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    if (open) document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [open]);
+  const dialogRef = useFocusTrap(open, () => setOpen(false));
 
   return (
     <>
@@ -35,17 +29,20 @@ export default function SizeGuide({ category }: { category: string }) {
       {open && (
         <div
           className="fixed inset-0 z-50 bg-ink/60 flex items-end md:items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Guide des tailles"
           onClick={() => setOpen(false)}
         >
           <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="size-guide-title"
             className="bg-bone max-w-md w-full p-6 md:p-8 max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-2xl italic">Guide des tailles</h2>
+              <h2 id="size-guide-title" className="font-display text-2xl italic">
+                Guide des tailles
+              </h2>
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Fermer"

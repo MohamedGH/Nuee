@@ -1,10 +1,29 @@
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { CATEGORY_SLOT } from "@/components/mannequin/types";
 import type { Slot, MannequinProduct } from "@/components/mannequin/types";
 import EssayageClient from "@/components/mannequin/EssayageClient";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
+import { SITE_URL } from "@/lib/site";
+
 export const dynamic = "force-dynamic";
+
+export function generateMetadata({
+  searchParams,
+}: {
+  searchParams: { produit?: string };
+}): Metadata {
+  return {
+    title: "Essayage 3D",
+    description:
+      "Composez une tenue sur un mannequin 3D et voyez comment les pièces NUÉE s'associent avant d'acheter.",
+    alternates: { canonical: `${SITE_URL}/essayage` },
+    // Avec ?produit=, c'est la même page pré-remplie différemment — pas
+    // une page distincte à indexer.
+    robots: searchParams.produit ? { index: false, follow: true } : undefined,
+  };
+}
 
 export default async function EssayagePage({
   searchParams,

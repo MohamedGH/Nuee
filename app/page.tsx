@@ -1,11 +1,21 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
+import RecommendedForYou from "@/components/RecommendedForYou";
+import JsonLd from "@/components/JsonLd";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/imagePlaceholder";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
+import { getSocialPlatforms } from "@/lib/social";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  alternates: { canonical: SITE_URL },
+};
 
 export default async function HomePage() {
+  const socialPlatforms = getSocialPlatforms();
   const products = await prisma.product.findMany({
     orderBy: { lookNumber: "asc" },
     take: 4,
@@ -14,6 +24,32 @@ export default async function HomePage() {
 
   return (
     <div>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: SITE_NAME,
+          url: SITE_URL,
+          description:
+            "NUÉE — vêtements essentiels en petites séries, coupes droites, matières brutes. Paris.",
+          ...(socialPlatforms.length > 0
+            ? { sameAs: socialPlatforms.map((p) => p.url) }
+            : {}),
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: SITE_NAME,
+          url: SITE_URL,
+          potentialAction: {
+            "@type": "SearchAction",
+            target: `${SITE_URL}/produits?q={search_term_string}`,
+            "query-input": "required name=search_term_string",
+          },
+        }}
+      />
       <section className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 pt-10 pb-14 md:pt-16 md:pb-20 grid md:grid-cols-12 gap-8 md:items-end">
         <div className="md:col-span-7">
           <p className="font-mono text-xs tracking-tag uppercase text-brick mb-6">
@@ -43,6 +79,8 @@ export default async function HomePage() {
                 src={products[0].image}
                 alt={products[0].name}
                 fill
+                placeholder="blur"
+                blurDataURL={IMAGE_BLUR_DATA_URL}
                 className="object-cover"
                 priority
               />
@@ -93,10 +131,13 @@ export default async function HomePage() {
               image={p.image}
               lookNumber={p.lookNumber}
               inStock={p.variants.some((v) => v.stock > 0)}
+              listName="Accueil"
             />
           ))}
         </div>
       </section>
+
+      <RecommendedForYou />
     </div>
   );
 }

@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatPrice } from "@/lib/format";
 import FavoriteButton from "@/components/FavoriteButton";
+import { trackSelectItem } from "@/lib/analytics";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/imagePlaceholder";
 
 type Props = {
   id: string;
@@ -12,6 +14,7 @@ type Props = {
   image: string;
   lookNumber: number;
   inStock?: boolean;
+  listName?: string;
 };
 
 export default function ProductCard({
@@ -23,14 +26,26 @@ export default function ProductCard({
   image,
   lookNumber,
   inStock = true,
+  listName = "Catalogue",
 }: Props) {
   return (
-    <Link href={`/produits/${slug}`} className="group focus-ring block">
+    <Link
+      href={`/produits/${slug}`}
+      className="group focus-ring block"
+      onClick={() =>
+        trackSelectItem(
+          { item_id: id, item_name: name, item_category: category, price: priceCents / 100 },
+          listName
+        )
+      }
+    >
       <div className="relative aspect-[4/5] overflow-hidden bg-line">
         <Image
           src={image}
           alt={name}
           fill
+          placeholder="blur"
+          blurDataURL={IMAGE_BLUR_DATA_URL}
           className={`object-cover transition-transform duration-500 group-hover:scale-[1.03] ${
             inStock ? "" : "grayscale opacity-70"
           }`}
@@ -39,7 +54,13 @@ export default function ProductCard({
         <span className="absolute top-3 left-3 bg-bone/90 font-mono text-[10px] tracking-tag px-2 py-1">
           LOOK N°{String(lookNumber).padStart(2, "0")}
         </span>
-        <FavoriteButton productId={id} className="absolute top-2 right-2" />
+        <FavoriteButton
+          productId={id}
+          name={name}
+          category={category}
+          priceCents={priceCents}
+          className="absolute top-2 right-2"
+        />
         {!inStock && (
           <span className="absolute bottom-3 left-3 bg-ink text-bone font-mono text-[10px] tracking-tag uppercase px-2 py-1">
             Rupture de stock

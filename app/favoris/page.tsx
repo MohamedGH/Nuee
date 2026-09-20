@@ -43,8 +43,13 @@ export default function FavoritesPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 py-10 md:py-16">
-      <h1 className="font-display text-4xl italic mb-10 border-b border-line pb-6">
+      <h1 className="font-display text-4xl italic mb-10 border-b border-line pb-6 flex items-baseline gap-3">
         Favoris
+        {mounted && ids.length > 0 && (
+          <span className="font-mono text-sm text-ink-soft">
+            ({ids.length})
+          </span>
+        )}
       </h1>
 
       {loading ? (
@@ -68,7 +73,7 @@ export default function FavoritesPage() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
           {products.map((p) => (
-            <ProductCard key={p.id} {...p} />
+            <ProductCard key={p.id} {...p} listName="Favoris" />
           ))}
         </div>
       )}

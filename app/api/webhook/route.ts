@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
+import { sendServerSidePurchase } from "@/lib/ga4MeasurementProtocol";
+import { GA_MEASUREMENT_ID } from "@/lib/analytics";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -31,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     const order = await prisma.order.findUnique({
       where: { stripeSessionId: session.id },
-      include: { items: true },
+      include: { items: { include: { product: true } } },
     });
 
     if (!order) {
@@ -92,6 +94,40 @@ export async function POST(req: NextRequest) {
         });
       }
     });
+
+    // Event purchase envoyé depuis le serveur — fiable même si le script
+    // GA côté navigateur a été bloqué ou si l'onglet s'est fermé avant que
+    // la requête client parte. N'a lieu que si la personne avait consenti
+    // au suivi (gaClientId n'existe que dans ce cas) et jamais deux fois
+    // (Stripe peut renvoyer le même événement plusieurs fois).
+    if (order.gaClientId && !order.gaPurchaseSent && GA_MEASUREMENT_ID && env.GA4_API_SECRET) {
+      const sent = await sendServerSidePurchase({
+        measurementId: GA_MEASUREMENT_ID,
+        apiSecret: env.GA4_API_SECRET,
+        clientId: order.gaClientId,
+        transactionId: order.id,
+        value: order.totalCents / 100,
+        shipping: order.shippingCents / 100,
+        discount: order.discountCents / 100,
+        items: order.items.map((i) => ({
+          item_id: i.productId,
+          item_name: i.product.name,
+          item_category: i.product.category,
+          price: i.priceCents / 100,
+          quantity: i.quantity,
+        })),
+      });
+      if (sent) {
+        await prisma.order.update({
+          where: { id: order.id },
+          data: { gaPurchaseSent: true },
+        });
+      } else {
+        console.warn(
+          `Envoi GA4 (purchase) échoué pour la commande ${order.id} — le paiement est confirmé normalement, seul le suivi analytique a échoué. Pas de nouvelle tentative automatique (Stripe ne renvoie pas ce webhook une fois qu'il reçoit un 2xx) ; à corriger manuellement si besoin.`
+        );
+      }
+    }
   }
 
   return NextResponse.json({ received: true });

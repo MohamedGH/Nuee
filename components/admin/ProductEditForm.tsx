@@ -87,7 +87,7 @@ export default function ProductEditForm({
         className="focus-ring w-32 border border-line px-3 py-2 mb-6 bg-bone font-mono text-sm"
       />
 
-      {error && <p className="text-brick text-xs font-mono mb-4">{error}</p>}
+      {error && <p role="alert" className="text-brick text-xs font-mono mb-4">{error}</p>}
 
       <button
         type="submit"

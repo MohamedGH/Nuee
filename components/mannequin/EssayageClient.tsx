@@ -178,7 +178,7 @@ export default function EssayageClient({
             </div>
 
             {missingInSize.length > 0 && (
-              <p className="text-xs text-brick font-mono mb-4">
+              <p role="alert" className="text-xs text-brick font-mono mb-4">
                 Indisponible en {size} : {missingInSize.map((p) => p.name).join(", ")}
               </p>
             )}

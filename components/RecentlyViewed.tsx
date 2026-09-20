@@ -47,7 +47,7 @@ export default function RecentlyViewed({ excludeId }: { excludeId?: string }) {
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
         {products.slice(0, 4).map((p) => (
-          <ProductCard key={p.id} {...p} />
+          <ProductCard key={p.id} {...p} listName="Consultés récemment" />
         ))}
       </div>
     </section>

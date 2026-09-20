@@ -5,7 +5,10 @@ import { Fraunces, Archivo, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import NewsletterForm from "@/components/NewsletterForm";
+import SocialLinks from "@/components/SocialLinks";
+import { getSocialPlatforms } from "@/lib/social";
 import CookieConsent from "@/components/CookieConsent";
+import Toaster from "@/components/Toaster";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -26,10 +29,30 @@ const mono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
+import { SITE_URL, SITE_NAME } from "@/lib/site";
+
 export const metadata: Metadata = {
-  title: "NUÉE — Essentiels façonnés",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — Essentiels façonnés`,
+    template: `%s — ${SITE_NAME}`,
+  },
   description:
     "NUÉE. Vêtements essentiels en petites séries, coupes droites, matières brutes.",
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — Essentiels façonnés`,
+    description:
+      "Huit pièces, sans saison, cousues en petite série. Coupes droites, matières brutes.",
+    locale: "fr_FR",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} — Essentiels façonnés`,
+    description:
+      "Huit pièces, sans saison, cousues en petite série. Coupes droites, matières brutes.",
+  },
 };
 
 export default function RootLayout({
@@ -38,14 +61,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const nonce = headers().get("x-nonce") ?? undefined;
+  const socialPlatforms = getSocialPlatforms();
 
   return (
     <html lang="fr">
       <body
         className={`${fraunces.variable} ${archivo.variable} ${mono.variable} font-body antialiased`}
       >
+        <a
+          href="#main-content"
+          className="fixed left-4 -top-20 focus:top-4 z-[100] transition-[top] bg-ink text-bone font-mono text-xs tracking-tag uppercase px-4 py-3 focus-ring"
+        >
+          Aller au contenu
+        </a>
         <Header />
-        <main>{children}</main>
+        <main id="main-content" tabIndex={-1}>
+          {children}
+        </main>
         <footer className="border-t border-line mt-24 py-12 px-4 sm:px-6 md:px-12">
           <div className="max-w-6xl mx-auto grid gap-8 md:grid-cols-4 text-sm">
             <div>
@@ -81,6 +113,14 @@ export default function RootLayout({
                 Newsletter
               </p>
               <NewsletterForm />
+              {socialPlatforms.length > 0 && (
+                <>
+                  <p className="font-mono text-xs tracking-tag uppercase text-ink-soft mb-3 mt-6">
+                    Suivre
+                  </p>
+                  <SocialLinks platforms={socialPlatforms} />
+                </>
+              )}
             </div>
           </div>
 
@@ -89,6 +129,7 @@ export default function RootLayout({
           </p>
         </footer>
         <CookieConsent nonce={nonce} />
+        <Toaster />
       </body>
     </html>
   );

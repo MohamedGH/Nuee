@@ -4,6 +4,7 @@ import Image from "next/image";
 import { formatPrice } from "@/lib/format";
 import { firstColorHex } from "./types";
 import type { MannequinProduct } from "./types";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/imagePlaceholder";
 
 export default function SlotPicker({
   label,
@@ -43,7 +44,14 @@ export default function SlotPicker({
                   active ? "border-ink border-2" : "border-line"
                 }`}
               >
-                <Image src={p.image} alt={p.name} fill className="object-cover" />
+                <Image
+                  src={p.image}
+                  alt={p.name}
+                  fill
+                  placeholder="blur"
+                  blurDataURL={IMAGE_BLUR_DATA_URL}
+                  className="object-cover"
+                />
                 <span
                   className="absolute bottom-1 left-1 w-3 h-3 rounded-full border border-bone"
                   style={{ backgroundColor: firstColorHex(p.colors) }}

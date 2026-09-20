@@ -1,11 +1,46 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
 import SearchBar from "@/components/SearchBar";
 import SortSelect from "@/components/SortSelect";
 import PriceFilter from "@/components/PriceFilter";
+import RecommendedForYou from "@/components/RecommendedForYou";
+import JsonLd from "@/components/JsonLd";
+import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
+
+type CatalogSearchParams = { cat?: string; q?: string; sort?: string; min?: string; max?: string };
+
+export function generateMetadata({
+  searchParams,
+}: {
+  searchParams: CatalogSearchParams;
+}): Metadata {
+  const { cat, q, min, max } = searchParams;
+
+  // Recherche libre ou filtre prix : combinaisons à faible valeur pour un
+  // moteur de recherche (quasi-doublons du catalogue) — on les exclut de
+  // l'index plutôt que de laisser Google les découvrir une par une.
+  const hasLowValueFilter = Boolean(q || min || max);
+
+  const title = cat ? `${cat} — Collection` : "Collection";
+  const description = cat
+    ? `Découvrez les pièces ${cat.toLowerCase()} de NUÉE — huit pièces, sans saison, cousues en petite série.`
+    : "La collection complète NUÉE — huit pièces, sans saison, cousues en petite série.";
+
+  const canonical = cat
+    ? `${SITE_URL}/produits?cat=${encodeURIComponent(cat)}`
+    : `${SITE_URL}/produits`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    robots: hasLowValueFilter ? { index: false, follow: true } : undefined,
+  };
+}
 
 const SORT_OPTIONS: Record<string, any> = {
   nouveautes: { createdAt: "desc" },
@@ -16,7 +51,7 @@ const SORT_OPTIONS: Record<string, any> = {
 export default async function CatalogPage({
   searchParams,
 }: {
-  searchParams: { cat?: string; q?: string; sort?: string; min?: string; max?: string };
+  searchParams: CatalogSearchParams;
 }) {
   const cat = searchParams.cat;
   const q = searchParams.q?.trim();
@@ -66,6 +101,20 @@ export default async function CatalogPage({
   };
 
   return (
+    <>
+    {!q && min === undefined && max === undefined && (
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: products.map((p, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            url: `${SITE_URL}/produits/${p.slug}`,
+          })),
+        }}
+      />
+    )}
     <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 py-10 md:py-16">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6 border-b border-line pb-6">
         <h1 className="font-display text-4xl italic">Collection</h1>
@@ -132,10 +181,13 @@ export default async function CatalogPage({
               image={p.image}
               lookNumber={p.lookNumber}
               inStock={p.variants.some((v) => v.stock > 0)}
+              listName="Catalogue"
             />
           ))}
         </div>
       )}
     </div>
+    <RecommendedForYou />
+    </>
   );
 }

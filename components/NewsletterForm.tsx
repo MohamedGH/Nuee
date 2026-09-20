@@ -51,7 +51,7 @@ export default function NewsletterForm() {
       >
         {state === "loading" ? "…" : "S'inscrire"}
       </button>
-      {error && <p className="text-brick text-xs font-mono">{error}</p>}
+      {error && <p role="alert" className="text-brick text-xs font-mono">{error}</p>}
     </form>
   );
 }

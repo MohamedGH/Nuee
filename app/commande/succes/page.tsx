@@ -1,9 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/store/cart";
-import { trackPurchase } from "@/lib/analytics";
+import { formatPrice } from "@/lib/format";
+
+type OrderSummary = {
+  id: string;
+  totalCents: number;
+  discountCents: number;
+  shippingCents: number;
+  items: { id: string; name: string; category: string; priceCents: number; quantity: number }[];
+};
 
 export default function SuccessPage({
   searchParams,
@@ -12,6 +20,7 @@ export default function SuccessPage({
 }) {
   const clear = useCart((s) => s.clear);
   const sessionId = searchParams.session_id;
+  const [order, setOrder] = useState<OrderSummary | null>(null);
 
   useEffect(() => {
     clear();
@@ -19,32 +28,11 @@ export default function SuccessPage({
 
   useEffect(() => {
     if (!sessionId) return;
-
-    // Évite de compter deux fois le même achat si la page est rechargée.
-    const dedupeKey = `nuee-purchase-tracked:${sessionId}`;
-    if (window.sessionStorage.getItem(dedupeKey)) return;
-
     fetch(`/api/orders/by-session?session_id=${encodeURIComponent(sessionId)}`)
       .then((res) => (res.ok ? res.json() : null))
-      .then((order) => {
-        if (!order) return;
-        trackPurchase({
-          transactionId: order.id,
-          value: order.totalCents / 100,
-          shipping: order.shippingCents / 100,
-          discount: order.discountCents / 100,
-          items: order.items.map((i: any) => ({
-            item_id: i.id,
-            item_name: i.name,
-            item_category: i.category,
-            price: i.priceCents / 100,
-            quantity: i.quantity,
-          })),
-        });
-        window.sessionStorage.setItem(dedupeKey, "1");
-      })
+      .then(setOrder)
       .catch(() => {
-        // Le suivi analytique n'est jamais bloquant pour l'expérience d'achat.
+        // Le récapitulatif est un confort, pas un élément bloquant.
       });
   }, [sessionId]);
 
@@ -63,6 +51,29 @@ export default function SuccessPage({
           Référence : {sessionId}
         </p>
       )}
+
+      {order && (
+        <div className="border border-line p-6 text-left mb-10">
+          <p className="font-mono text-xs tracking-tag uppercase text-ink-soft mb-4">
+            Récapitulatif
+          </p>
+          <div className="flex flex-col gap-3 mb-4">
+            {order.items.map((item) => (
+              <div key={item.id} className="flex justify-between text-sm font-mono">
+                <span>
+                  {item.name} <span className="text-ink-soft">× {item.quantity}</span>
+                </span>
+                <span>{formatPrice(item.priceCents * item.quantity)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between font-mono text-sm pt-3 border-t border-line font-medium">
+            <span>Total payé</span>
+            <span>{formatPrice(order.totalCents)}</span>
+          </div>
+        </div>
+      )}
+
       <Link
         href="/produits"
         className="focus-ring inline-block font-mono text-xs tracking-tag uppercase border border-ink px-6 py-3 hover:bg-ink hover:text-bone transition-colors"

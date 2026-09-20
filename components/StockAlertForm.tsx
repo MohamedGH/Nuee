@@ -61,7 +61,7 @@ export default function StockAlertForm({
       >
         {state === "loading" ? "…" : `Me prévenir — taille ${size}`}
       </button>
-      {error && <p className="text-brick text-xs font-mono">{error}</p>}
+      {error && <p role="alert" className="text-brick text-xs font-mono">{error}</p>}
     </form>
   );
 }

@@ -15,6 +15,7 @@ export const checkoutSchema = z.object({
     .or(z.literal("")),
   shippingMethod: z.enum(["standard", "express"]).default("standard"),
   giftWrap: z.boolean().default(false),
+  gaClientId: z.string().trim().max(64).regex(/^[\w.-]+$/).optional().or(z.literal("")),
   items: z
     .array(
       z.object({

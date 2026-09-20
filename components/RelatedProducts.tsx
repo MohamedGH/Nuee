@@ -21,7 +21,7 @@ export default function RelatedProducts({ products }: { products: RelatedProduct
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
         {products.map((p) => (
-          <ProductCard key={p.id} {...p} />
+          <ProductCard key={p.id} {...p} listName="Produits similaires" />
         ))}
       </div>
     </section>
