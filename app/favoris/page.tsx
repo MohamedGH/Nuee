@@ -39,8 +39,6 @@ export default function FavoritesPage() {
       .finally(() => setLoading(false));
   }, [ids, mounted]);
 
-  if (!mounted) return null;
-
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-12 py-10 md:py-16">
       <h1 className="font-display text-4xl italic mb-10 border-b border-line pb-6 flex items-baseline gap-3">

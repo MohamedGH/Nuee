@@ -99,7 +99,24 @@ export default function CartPage() {
     }
   }
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-12 py-10 md:py-16 animate-pulse">
+        <div className="h-10 bg-line w-40 mb-6 border-b border-line pb-6" />
+        <div className="flex flex-col gap-6">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="flex gap-4 border-b border-line pb-6">
+              <div className="w-20 h-24 shrink-0 bg-line" />
+              <div className="flex-1">
+                <div className="h-5 bg-line w-2/3 mb-2" />
+                <div className="h-3 bg-line w-1/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-12 py-10 md:py-16">
