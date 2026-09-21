@@ -15,6 +15,29 @@ export function isAdminConfigured(): boolean {
   return Boolean(env.ADMIN_PASSWORD_HASH && env.ADMIN_SESSION_SECRET);
 }
 
+/**
+ * Un hash bcrypt fait toujours 60 caractères et commence par "$2". S'il
+ * ne correspond pas à ce format alors que la variable est définie, c'est
+ * presque toujours le même bug : @next/env a interprété les "$" du hash
+ * (ex. "$2a$12$...") comme une interpolation de variable et l'a corrompu
+ * au chargement — voir `npm run admin:hash`, qui échappe désormais les
+ * "$" en "\$" pour l'éviter. Sans ce contrôle, l'admin échoue avec un
+ * simple "mot de passe incorrect" quel que soit le mot de passe saisi,
+ * ce qui est très difficile à diagnostiquer de l'extérieur.
+ */
+function warnIfHashLooksCorrupted() {
+  const hash = env.ADMIN_PASSWORD_HASH;
+  if (hash && (!hash.startsWith("$2") || hash.length !== 60)) {
+    console.error(
+      "ADMIN_PASSWORD_HASH semble corrompu (longueur ou format inattendu). " +
+        "C'est généralement dû à des \"$\" non échappés dans .env.local — " +
+        "régénère la valeur avec `npm run admin:hash -- \"ton-mot-de-passe\"` " +
+        "et colle le résultat tel quel (les \\$ font partie de la valeur, ne les retire pas)."
+    );
+  }
+}
+warnIfHashLooksCorrupted();
+
 export async function verifyAdminPassword(password: string): Promise<boolean> {
   if (!env.ADMIN_PASSWORD_HASH) return false;
   return bcrypt.compare(password, env.ADMIN_PASSWORD_HASH);

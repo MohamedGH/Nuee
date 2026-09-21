@@ -138,6 +138,17 @@ Sans ces deux variables, `/admin` reste inaccessible (503 à la connexion).
 Session de 12h, cookie signé httpOnly/secure/SameSite=Strict, connexion
 limitée à 8 tentatives / 15 min par IP. Détail dans `SECURITY.md`.
 
+**Piège connu** : un hash bcrypt contient des `$` (`$2a$12$...`), que le
+chargeur d'environnement de Next.js (`@next/env`) interprète par défaut
+comme une interpolation de variable — collé tel quel, le hash est
+silencieusement corrompu et la connexion admin échoue avec un simple
+"mot de passe incorrect", quel que soit le mot de passe saisi.
+`npm run admin:hash` échappe désormais les `$` en `\$` dans sa sortie :
+colle-la telle quelle, sans retirer les `\`. Si `/admin` refuse toujours
+un mot de passe qui devrait être bon, le serveur affiche un avertissement
+explicite dans sa console si le hash chargé ne ressemble pas à un vrai
+hash bcrypt (longueur ou format inattendu).
+
 ## Fonctionnalités
 
 - Newsletter (inscription en pied de page, liste consultable en admin)
