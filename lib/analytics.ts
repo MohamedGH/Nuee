@@ -97,6 +97,17 @@ export function trackFilter(params: { category?: string; sort?: string; minPrice
   track("filter_products", params);
 }
 
+/**
+ * Signale qu'un visiteur a vu une variante d'expérience A/B — permet
+ * d'analyser les résultats dans GA4 (segmenter les conversions par
+ * expérience/variante). N'envoie rien si GA n'est pas chargé (mêmes
+ * règles de consentement que le reste du suivi, sans code spécifique
+ * à écrire ici).
+ */
+export function trackExperimentExposure(experimentKey: string, variant: string) {
+  track("experiment_impression", { experiment_id: experimentKey, variant_id: variant });
+}
+
 export function trackBrowsingTopics(topicIds: number[]) {
   if (topicIds.length === 0) return;
   track("browsing_topics_observed", { topic_ids: topicIds.join(",") });

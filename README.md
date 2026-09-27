@@ -59,6 +59,39 @@ stripe listen --forward-to localhost:3000/api/webhook
   domaine en production pour que les URLs canoniques et les images Open
   Graph résolvent correctement (sinon repli sur `http://localhost:3000`).
 
+## Tests A/B
+
+Module de première partie (`lib/abtest.ts` + `lib/useExperiment.ts`) — pas
+d'outil tiers (Google Optimize est arrêté). Assignation déterministe par
+visiteur (identifiant anonyme en localStorage, jamais un cookie), stable
+d'une visite à l'autre. Exemple câblé : la couleur du bouton "Ajouter au
+panier" (`components/AddToCart.tsx`, expérience `cta-color`, témoin
+`ink` vs `brick`).
+
+Chaque exposition envoie un event GA4 `experiment_impression`
+(`experiment_id`, `variant_id`) — mêmes règles de consentement que le
+reste du suivi (rien n'est envoyé si GA n'est pas chargé). Pour lire les
+résultats, croiser cet event avec l'event de conversion pertinent
+(`add_to_cart` pour l'exemple ci-dessus) dans un rapport GA4 exploration,
+segmenté par `variant_id`.
+
+Pour ajouter une expérience : `useExperiment("ma-cle", ["a", "b"] as const)`
+dans un composant client, et afficher `variants[0]` tant que `ready` est
+faux (évite un écart d'hydratation React, le tirage dépend de
+localStorage donc indisponible côté serveur).
+
+## Tests automatisés
+
+```bash
+npm test        # une fois
+npm run test:watch
+```
+
+Vitest, environnement Node (pas de rendu de composants — la logique
+métier pure : A/B testing, calcul de livraison, signaux de
+confidentialité GPC/DNT, résolution de coupons avec Prisma mocké).
+33 tests sur 5 fichiers à ce jour (`lib/*.test.ts`).
+
 ## Analytique
 
 Google Analytics 4 + Microsoft Clarity (heatmaps, replays de session) —

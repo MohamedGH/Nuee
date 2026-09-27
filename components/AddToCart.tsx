@@ -6,6 +6,7 @@ import { useCart } from "@/store/cart";
 import StockAlertForm from "@/components/StockAlertForm";
 import QuantityStepper from "@/components/QuantityStepper";
 import { trackAddToCart } from "@/lib/analytics";
+import { useExperiment } from "@/lib/useExperiment";
 
 type Variant = { size: string; stock: number };
 
@@ -38,6 +39,12 @@ export default function AddToCart({
   const selectedVariant = variants.find((v) => v.size === size);
   const maxQuantity = Math.min(selectedVariant?.stock ?? 10, 10);
   const outOfStock = selectedVariant?.stock === 0;
+
+  // Expérience A/B : couleur du bouton d'ajout au panier. "ink" (témoin,
+  // couleur actuelle) vs "brick" (couleur d'accent de la marque). La
+  // conversion se lit dans GA4 en croisant l'event add_to_cart avec
+  // experiment_impression (experiment_id="cta-color") sur variant_id.
+  const { variant: ctaColor } = useExperiment("cta-color", ["ink", "brick"] as const);
 
   function handleAdd() {
     if (!size) {
@@ -125,7 +132,9 @@ export default function AddToCart({
       {!outOfStock && (
         <button
           onClick={handleAdd}
-          className="focus-ring w-full md:w-auto font-mono text-xs tracking-tag uppercase px-8 py-4 bg-ink text-bone hover:bg-brick-dark transition-colors"
+          className={`focus-ring w-full md:w-auto font-mono text-xs tracking-tag uppercase px-8 py-4 text-bone transition-colors ${
+            ctaColor === "brick" ? "bg-brick hover:bg-brick-dark" : "bg-ink hover:bg-brick-dark"
+          }`}
         >
           {added ? "Ajouté ✓" : "Ajouter au panier"}
         </button>
