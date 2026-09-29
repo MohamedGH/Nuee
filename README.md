@@ -64,9 +64,22 @@ stripe listen --forward-to localhost:3000/api/webhook
 Module de première partie (`lib/abtest.ts` + `lib/useExperiment.ts`) — pas
 d'outil tiers (Google Optimize est arrêté). Assignation déterministe par
 visiteur (identifiant anonyme en localStorage, jamais un cookie), stable
-d'une visite à l'autre. Exemple câblé : la couleur du bouton "Ajouter au
-panier" (`components/AddToCart.tsx`, expérience `cta-color`, témoin
-`ink` vs `brick`).
+d'une visite à l'autre. Répartition pondérée possible (`assignWeightedVariant`,
+ex. un rollout progressif 90/10), pas seulement un partage égal entre
+variantes.
+
+**Registre central** (`lib/experiments.ts`) — chaque expérience active y
+est déclarée une seule fois (clé, variantes, poids, description), pour
+éviter deux expériences avec la même clé (silencieusement corrélées par
+le hash) et savoir d'un coup d'œil ce qui tourne sans grep-per le code
+des composants. Chaque expérience a un coupe-circuit (`active: false`) :
+tout le monde reçoit alors le témoin, sans tirage ni suivi d'exposition —
+pratique pour arrêter une expérience terminée sans toucher au composant
+qui l'utilise.
+
+Exemple câblé : la couleur du bouton "Ajouter au panier"
+(`components/AddToCart.tsx`, expérience `ctaColor` → clé `cta-color`,
+témoin `ink` vs `brick`).
 
 Chaque exposition envoie un event GA4 `experiment_impression`
 (`experiment_id`, `variant_id`) — mêmes règles de consentement que le
@@ -75,10 +88,15 @@ résultats, croiser cet event avec l'event de conversion pertinent
 (`add_to_cart` pour l'exemple ci-dessus) dans un rapport GA4 exploration,
 segmenté par `variant_id`.
 
-Pour ajouter une expérience : `useExperiment("ma-cle", ["a", "b"] as const)`
-dans un composant client, et afficher `variants[0]` tant que `ready` est
-faux (évite un écart d'hydratation React, le tirage dépend de
-localStorage donc indisponible côté serveur).
+**Prévisualisation forcée** (support/debug) : ajouter
+`?variant-cta-color=brick` à l'URL affiche cette variante précise sans
+passer par le hash — aucune exposition n'est comptée dans ce cas, pour ne
+pas fausser les résultats.
+
+Pour ajouter une expérience : la déclarer dans `lib/experiments.ts`, puis
+`useExperiment("maCle")` dans un composant client. Affiche le témoin tant
+que `ready` est faux (évite un écart d'hydratation React, le tirage
+dépend de localStorage donc indisponible côté serveur).
 
 ## Tests automatisés
 
@@ -90,7 +108,7 @@ npm run test:watch
 Vitest, environnement Node (pas de rendu de composants — la logique
 métier pure : A/B testing, calcul de livraison, signaux de
 confidentialité GPC/DNT, résolution de coupons avec Prisma mocké).
-33 tests sur 5 fichiers à ce jour (`lib/*.test.ts`).
+49 tests sur 6 fichiers à ce jour (`lib/*.test.ts`).
 
 ## Analytique
 

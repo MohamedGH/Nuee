@@ -1,5 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { hashString, assignVariant } from "./abtest";
+import { describe, it, expect, afterEach, vi } from "vitest";
+import {
+  hashString,
+  assignVariant,
+  assignWeightedVariant,
+  getOrCreateVisitorId,
+} from "./abtest";
 
 describe("hashString", () => {
   it("est déterministe", () => {
@@ -55,5 +60,111 @@ describe("assignVariant", () => {
 
   it("renvoie l'unique variante s'il n'y en a qu'une", () => {
     expect(assignVariant("visitor-1", "exp", ["only"])).toBe("only");
+  });
+});
+
+
+describe("assignWeightedVariant", () => {
+  it("est déterministe pour un même visiteur", () => {
+    const variants = [
+      { value: "a", weight: 9 },
+      { value: "b", weight: 1 },
+    ] as const;
+    const first = assignWeightedVariant("v-1", "exp", variants);
+    for (let i = 0; i < 20; i++) {
+      expect(assignWeightedVariant("v-1", "exp", variants)).toBe(first);
+    }
+  });
+
+  it("respecte un partage 90/10 sur un grand échantillon", () => {
+    const variants = [
+      { value: "control", weight: 9 },
+      { value: "treatment", weight: 1 },
+    ] as const;
+    const total = 5000;
+    let treatment = 0;
+    for (let i = 0; i < total; i++) {
+      if (assignWeightedVariant(`visitor-${i}`, "rollout", variants) === "treatment") treatment++;
+    }
+    const ratio = treatment / total;
+    expect(ratio).toBeGreaterThan(0.07);
+    expect(ratio).toBeLessThan(0.13);
+  });
+
+  it("n'exige pas que les poids somment à 1 ou 100", () => {
+    const variants = [
+      { value: "a", weight: 3 },
+      { value: "b", weight: 3 },
+    ] as const;
+    expect(["a", "b"]).toContain(assignWeightedVariant("v", "exp", variants));
+  });
+
+  it("n'attribue jamais une variante de poids 0", () => {
+    const variants = [
+      { value: "live", weight: 1 },
+      { value: "dead", weight: 0 },
+    ] as const;
+    for (let i = 0; i < 500; i++) {
+      expect(assignWeightedVariant(`visitor-${i}`, "exp", variants)).toBe("live");
+    }
+  });
+
+  it("lève une erreur si la liste est vide", () => {
+    expect(() => assignWeightedVariant("v", "exp", [])).toThrow();
+  });
+
+  it("lève une erreur si la somme des poids est nulle", () => {
+    expect(() =>
+      assignWeightedVariant("v", "exp", [
+        { value: "a", weight: 0 },
+        { value: "b", weight: 0 },
+      ])
+    ).toThrow();
+  });
+});
+
+describe("getOrCreateVisitorId", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function stubStorage(store: Record<string, string> = {}, opts: { throws?: boolean } = {}) {
+    vi.stubGlobal("window", {
+      localStorage: {
+        getItem: (k: string) => {
+          if (opts.throws) throw new Error("storage indisponible");
+          return store[k] ?? null;
+        },
+        setItem: (k: string, v: string) => {
+          if (opts.throws) throw new Error("storage indisponible");
+          store[k] = v;
+        },
+      },
+    });
+    return store;
+  }
+
+  it("crée un identifiant et le réutilise ensuite", () => {
+    stubStorage();
+    const first = getOrCreateVisitorId();
+    const second = getOrCreateVisitorId();
+    expect(first).toBeTruthy();
+    expect(second).toBe(first);
+  });
+
+  it("réutilise un identifiant déjà présent", () => {
+    stubStorage({ "nuee-visitor-id": "deja-la" });
+    expect(getOrCreateVisitorId()).toBe("deja-la");
+  });
+
+  it("retombe sur un identifiant éphémère si le stockage est indisponible", () => {
+    stubStorage({}, { throws: true });
+    const id = getOrCreateVisitorId();
+    expect(id).toMatch(/^ephemeral-/);
+  });
+
+  it("renvoie un identifiant fixe côté serveur (window indéfini)", () => {
+    vi.stubGlobal("window", undefined);
+    expect(getOrCreateVisitorId()).toBe("server");
   });
 });

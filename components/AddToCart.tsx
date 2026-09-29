@@ -44,7 +44,7 @@ export default function AddToCart({
   // couleur actuelle) vs "brick" (couleur d'accent de la marque). La
   // conversion se lit dans GA4 en croisant l'event add_to_cart avec
   // experiment_impression (experiment_id="cta-color") sur variant_id.
-  const { variant: ctaColor } = useExperiment("cta-color", ["ink", "brick"] as const);
+  const { variant: ctaColor } = useExperiment("ctaColor");
 
   function handleAdd() {
     if (!size) {
