@@ -227,6 +227,38 @@ hash bcrypt (longueur ou format inattendu).
 - Paiement Stripe (carte + PayPal), webhook signé, stock décrémenté de façon
   idempotente
 
+## Modules — vue d'ensemble
+
+`/admin/modules` affiche l'état réel de chaque module optionnel (actif ou
+non, calculé depuis la configuration effectivement chargée — pas un
+simple rappel de ce qui existe dans le code), avec une explication de ce
+qu'il fait.
+
+```mermaid
+flowchart TD
+    V[Visiteur] --> Consent{Bandeau de consentement}
+    Consent -- accepté --> GA[Google Analytics 4]
+    Consent -- accepté --> Clarity[Microsoft Clarity]
+    Consent -- accepté --> Topics[API Topics]
+    Consent -- signal GPC/DNT détecté --> Refus[Refus automatique, sans bandeau]
+
+    V --> AB[Tests A/B\nlib/experiments.ts]
+    AB -- exposition --> GA
+
+    Checkout[Panier / Paiement Stripe] --> Webhook[Webhook Stripe]
+    Webhook -- event achat fiable --> GA4MP[GA4 Measurement Protocol\nserveur]
+    GA -. client_id capturé au paiement .-> GA4MP
+
+    GA --> Rapports[Rapports GA4]
+    Clarity --> Rapports
+    GA4MP --> Rapports
+
+    Admin[/admin/modules] -. lit l'état des variables d'environnement .-> GA
+    Admin -. .-> Clarity
+    Admin -. .-> Topics
+    Admin -. .-> AB
+```
+
 ## Structure
 
 - `app/` — pages (App Router) : accueil, catalogue, fiche produit, panier,
