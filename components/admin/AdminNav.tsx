@@ -13,6 +13,7 @@ const links = [
   { href: "/admin/coupons", label: "Coupons" },
   { href: "/admin/newsletter", label: "Newsletter" },
   { href: "/admin/modules", label: "Modules" },
+  { href: "/admin/experiments", label: "Tests A/B" },
 ];
 
 export default function AdminNav() {

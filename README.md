@@ -88,6 +88,15 @@ résultats, croiser cet event avec l'event de conversion pertinent
 (`add_to_cart` pour l'exemple ci-dessus) dans un rapport GA4 exploration,
 segmenté par `variant_id`.
 
+**Significativité** (`lib/statistics.ts`, module complémentaire) — une
+fois les chiffres relevés dans GA4 (visiteurs exposés et conversions par
+variante), `/admin/experiments` propose un calculateur qui répond à la
+question qui suit naturellement : l'écart observé est-il réel, ou
+probablement du bruit d'échantillonnage ? Test Z à deux proportions,
+seuil habituel p < 0,05. Les chiffres se saisissent à la main depuis
+GA4 — pas de lecture automatique (demanderait une intégration OAuth à
+l'API de données GA4, hors périmètre ici).
+
 **Prévisualisation forcée** (support/debug) : ajouter
 `?variant-cta-color=brick` à l'URL affiche cette variante précise sans
 passer par le hash — aucune exposition n'est comptée dans ce cas, pour ne
