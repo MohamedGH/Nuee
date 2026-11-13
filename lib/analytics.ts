@@ -98,6 +98,18 @@ export function trackFilter(params: { category?: string; sort?: string; minPrice
 }
 
 /**
+ * Palier de défilement atteint (25/50/75/100). `contentId` permet de
+ * segmenter par produit dans GA4 plutôt que par simple chemin d'URL.
+ */
+export function trackScrollDepth(percent: number, pagePath: string, contentId?: string) {
+  track("scroll_depth", {
+    percent_scrolled: percent,
+    page_path: pagePath,
+    ...(contentId ? { content_id: contentId } : {}),
+  });
+}
+
+/**
  * Signale qu'un visiteur a vu une variante d'expérience A/B — permet
  * d'analyser les résultats dans GA4 (segmenter les conversions par
  * expérience/variante). N'envoie rien si GA n'est pas chargé (mêmes

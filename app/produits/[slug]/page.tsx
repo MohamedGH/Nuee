@@ -14,6 +14,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import RecentlyViewed from "@/components/RecentlyViewed";
 import TrackRecentlyViewed from "@/components/TrackRecentlyViewed";
 import TrackViewItem from "@/components/TrackViewItem";
+import TrackScrollDepth from "@/components/TrackScrollDepth";
 import StarRating from "@/components/StarRating";
 import JsonLd from "@/components/JsonLd";
 import { CATEGORY_SLOT } from "@/components/mannequin/types";
@@ -145,6 +146,7 @@ export default async function ProductPage({
       />
 
       <TrackRecentlyViewed productId={product.id} />
+      <TrackScrollDepth resetKey={product.id} contentId={product.id} />
       <TrackViewItem
         id={product.id}
         name={product.name}
