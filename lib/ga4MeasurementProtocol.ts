@@ -1,6 +1,9 @@
 // L'API secret ne doit jamais être exposée au client — c'est pourquoi ce
 // module est strictement serveur (jamais importé depuis un composant client).
+import { fetchWithTimeout } from "@/lib/withTimeout";
+
 const MP_ENDPOINT = "https://www.google-analytics.com/mp/collect";
+const GA4_TIMEOUT_MS = 3000;
 
 export type MpItem = {
   item_id: string;
@@ -33,13 +36,19 @@ export async function sendServerSideEvent(params: {
   const url = `${MP_ENDPOINT}?measurement_id=${measurementId}&api_secret=${apiSecret}`;
 
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      body: JSON.stringify({
-        client_id: clientId,
-        events: [{ name: eventName, params: eventParams }],
-      }),
-    });
+    // Borné : appelé depuis le webhook Stripe, un Google lent ne doit pas
+    // retarder la réponse à Stripe (qui réessaierait sur délai dépassé).
+    const res = await fetchWithTimeout(
+      url,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          client_id: clientId,
+          events: [{ name: eventName, params: eventParams }],
+        }),
+      },
+      GA4_TIMEOUT_MS
+    );
     // Le Measurement Protocol répond 204 même en cas d'événement mal
     // formé (il ne valide pas la charge utile de façon synchrone) — un
     // statut non-2xx signale au moins un problème réseau/de clé.
